@@ -148,14 +148,6 @@ export async function getAppConfigByAppName(appName:string):Promise<VaasServerTy
             timeout: 30*1000
         }
     }
-    if(appName=='hello') {
-        await latestApp({appName})
-        return {
-            maxWorkerNum: 2,
-            allowModuleSet: new Set(['*']),
-            timeout: 30*1000
-        }
-    }
     const appConfigList = await etcd.range({key:getAppConfigKeyByAppName({appName})})
     if(!appConfigList.length) {
         throw new Error(`appName[${appName}] not be registered`)
