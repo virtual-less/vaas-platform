@@ -24,6 +24,8 @@ export class Etcd {
     async getMeta() {
         const meta = new Metadata()
         if(this.username && this.password) {
+            // why to auth every time, because sampletoken mode can't be get exprie time
+            // if you want more fast,you maybe need to close auth
             const authData = await this.authenticate({name:this.username,password:this.password})
             meta.add('Authorization', authData.token);
         }
