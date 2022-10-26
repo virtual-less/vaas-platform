@@ -9,7 +9,7 @@ import {S3} from '../lib/s3'
 import config from './index'
 import {Etcd} from '../lib/etcd'
 
-export const etcd = new Etcd({endpoints:config.configServer.etcd.endpoints})
+export const etcd = new Etcd({...config.configServer.etcd})
 export const s3 = new S3({
     ...config.storageServer.minio
 })
