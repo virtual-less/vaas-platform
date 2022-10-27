@@ -1,7 +1,6 @@
 export default{
     configServer:{
         // your etcd v3 config
-        // todo username && paaaword
         etcd:{
             endpoints:['127.0.0.1:2379'],
             username:'root',
