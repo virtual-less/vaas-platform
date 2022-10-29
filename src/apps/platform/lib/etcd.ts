@@ -34,17 +34,17 @@ export class Etcd {
 
     async range({
         key,
-        range_end
+        rangeEnd
     }:{
         key:string,
-        range_end?:string,
+        rangeEnd?:string,
     }):Promise<Array<any>> {
         const client = this.netcd.getClient('KV')
         const meta = await this.getMeta()
         return await new Promise((reslove, reject)=>{
             client.Range({
                 key:Buffer.from(key).toString('base64'),
-                range_end:range_end?Buffer.from(range_end).toString('base64'):undefined,
+                rangeEnd:rangeEnd?Buffer.from('\0').toString('base64'):undefined,
             },meta, (err,data)=>{
                 if(err)return reject(err)
                 return reslove((data.kvs || []).map(data=>{
@@ -78,17 +78,17 @@ export class Etcd {
 
     async delete({
         key,
-        range_end
+        rangeEnd
     }:{
         key:string,
-        range_end?:string,
+        rangeEnd?:string,
     }) {
         const client = this.netcd.getClient('KV')
         const meta = await this.getMeta()
         return await new Promise((reslove, reject)=>{
             client.DeleteRange({
                 key:Buffer.from(key).toString('base64'),
-                range_end:range_end?Buffer.from(range_end).toString('base64'):undefined,
+                rangeEnd:rangeEnd?Buffer.from(rangeEnd).toString('base64'):undefined,
             },meta,(err,data)=>{
                 if(err)return reject(err)
                 return reslove(data)

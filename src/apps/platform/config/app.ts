@@ -57,7 +57,6 @@ function getDeployMetaPath({appName}) {
 }
 
 async function deployApp({appName, deployData}) {
-    console.log(deployData)
     const filePath = path.join(
         __dirname, uuidV1()
     )
@@ -93,7 +92,7 @@ export async function latestApp({appName}) {
 export async function getAllAppConfigList() {
     return await etcd.range({
         key:getAppConfigKeyByAppName({}),
-        range_end:upgradeConfigKey({key:getAppConfigKeyByAppName({})})
+        rangeEnd:upgradeConfigKey({key:getAppConfigKeyByAppName({})})
     })
 }
 
@@ -108,23 +107,28 @@ export async function IsHostRegistered({host,appName}) {
     return Boolean(otherHostConfigList?.length)
 }
 
-export async function setAppConfigByAppName({appName, hostList, appConfig}:{
+interface EtcdAppConfig extends VaasServerType.AppConfig {
     appName:string,
+    description:string,
     hostList:Array<string>,
-    appConfig:VaasServerType.AppConfig
+}
+
+export async function setAppConfigByAppName({appName, appConfig}:{
+    appName:string,
+    appConfig:EtcdAppConfig
 }):Promise<boolean> {
     if(SYS_APP_LIST.includes(appName)) {
         throw new Error(`The system app cannot be modified`)
     }
-    for(const host of hostList) {
+    for(const host of appConfig.hostList) {
         if(await IsHostRegistered({host,appName})) {
             throw new Error(`the domain[${host}] has been registered`)
         }
     }
-    await etcd.put({key:getAppConfigKeyByAppName({appName}),value:appConfig})
-    for(const host of hostList) {
+    for(const host of appConfig.hostList) {
         await etcd.put({key:getHostKeyByHost({host}),value:{appName}})
     }
+    await etcd.put({key:getAppConfigKeyByAppName({appName}),value:appConfig})
     return true
 }
 

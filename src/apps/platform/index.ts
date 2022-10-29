@@ -52,6 +52,7 @@ export default class Platform {
     async createAppConfig({req,res}:VaasServerType.HttpParams) {
         const {
             appName,
+            description,
             hostList,
             maxWorkerNum,
             allowModuleSet,
@@ -63,8 +64,10 @@ export default class Platform {
         }
         const data = await setAppConfigByAppName({
             appName,
-            hostList,
             appConfig:{
+                appName,
+                description,
+                hostList,
                 maxWorkerNum,
                 allowModuleSet,
                 timeout,
@@ -78,6 +81,7 @@ export default class Platform {
     async updateAppConfig({req,res}:VaasServerType.HttpParams) {
         const {
             appName,
+            description,
             hostList,
             maxWorkerNum,
             allowModuleSet,
@@ -86,8 +90,10 @@ export default class Platform {
         } = req.body
         const data = await setAppConfigByAppName({
             appName,
-            hostList,
             appConfig:{
+                appName,
+                description,
+                hostList,
                 maxWorkerNum,
                 allowModuleSet,
                 timeout,
