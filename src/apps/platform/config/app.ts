@@ -96,6 +96,13 @@ export async function getAllAppConfigList() {
     })
 }
 
+export async function getAllHostConfigList() {
+    return await etcd.range({
+        key:getHostKeyByHost({}),
+        rangeEnd:upgradeConfigKey({key:getHostKeyByHost({})})
+    })
+}
+
 export async function getAppConfigDataByName({appName}) {
     const appConfigList = await etcd.range({key:getAppConfigKeyByAppName({appName})})
     return appConfigList[0]
@@ -111,36 +118,45 @@ export async function IsHostRegistered({host,appName}) {
     return Boolean(otherHostConfigList?.length)
 }
 
+export async function setHostConfig({
+    host,
+    appName
+}) {
+    return await etcd.put({key:getHostKeyByHost({host}),value:{appName,host}})
+}
+
+export async function deleteHostConfigByHost({
+    host,
+}) {
+    return await etcd.delete({key:getHostKeyByHost({host})})
+}
+
 
 export async function setAppConfigByAppName({
     appName, 
     description,
-    hostList,
     appConfig
 }:{
     appName:string,
     description:string,
-    hostList:Array<string>,
     appConfig:VaasServerType.AppConfig
-}):Promise<boolean> {
+}):Promise<any> {
     if(SYS_APP_LIST.includes(appName)) {
         throw new Error(`The system app cannot be modified`)
     }
-    for(const host of hostList) {
-        if(await IsHostRegistered({host,appName})) {
-            throw new Error(`the domain[${host}] has been registered`)
-        }
-    }
-    for(const host of hostList) {
-        await etcd.put({key:getHostKeyByHost({host}),value:{appName}})
-    }
-    await etcd.put({key:getAppConfigKeyByAppName({appName}),value:{
+    return await etcd.put({key:getAppConfigKeyByAppName({appName}),value:{
         appName,
         description,
-        hostList,
         appConfig
     }})
-    return true
+}
+
+export async function deleteAppConfigByAppName({
+    appName, 
+}:{
+    appName:string,
+}) {
+    return await etcd.delete({key:getAppConfigKeyByAppName({appName})})
 }
 
 
