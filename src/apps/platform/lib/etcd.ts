@@ -38,13 +38,13 @@ export class Etcd {
     }:{
         key:string,
         rangeEnd?:string,
-    }):Promise<Array<any>> {
+    }):Promise<Array<{key:string,value:any}>> {
         const client = this.netcd.getClient('KV')
         const meta = await this.getMeta()
         return await new Promise((reslove, reject)=>{
             client.Range({
                 key:Buffer.from(key).toString('base64'),
-                rangeEnd:rangeEnd?Buffer.from('\0').toString('base64'):undefined,
+                rangeEnd:rangeEnd?Buffer.from(rangeEnd).toString('base64'):undefined,
             },meta, (err,data)=>{
                 if(err)return reject(err)
                 return reslove((data.kvs || []).map(data=>{

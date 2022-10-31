@@ -30,7 +30,7 @@ function getAppConfigKeyByAppName({appName=''}) {
 }
 
 function getHostKeyByHost({host=''}) {
-    return `/vaas/config/app/${host}`
+    return `/vaas/config/host/${host}`
 }
 
 function getDeployKeyByAppName({appName=''}) {
@@ -96,9 +96,13 @@ export async function getAllAppConfigList() {
     })
 }
 
-export async function isAppNameRegistered({appName}) {
+export async function getAppConfigDataByName({appName}) {
     const appConfigList = await etcd.range({key:getAppConfigKeyByAppName({appName})})
-    return Boolean(appConfigList.length)
+    return appConfigList[0]
+}
+
+export async function isAppNameRegistered({appName}) {
+    return Boolean(await getAppConfigDataByName({appName}))
 }
 
 export async function IsHostRegistered({host,appName}) {
@@ -107,28 +111,35 @@ export async function IsHostRegistered({host,appName}) {
     return Boolean(otherHostConfigList?.length)
 }
 
-interface EtcdAppConfig extends VaasServerType.AppConfig {
+
+export async function setAppConfigByAppName({
+    appName, 
+    description,
+    hostList,
+    appConfig
+}:{
     appName:string,
     description:string,
     hostList:Array<string>,
-}
-
-export async function setAppConfigByAppName({appName, appConfig}:{
-    appName:string,
-    appConfig:EtcdAppConfig
+    appConfig:VaasServerType.AppConfig
 }):Promise<boolean> {
     if(SYS_APP_LIST.includes(appName)) {
         throw new Error(`The system app cannot be modified`)
     }
-    for(const host of appConfig.hostList) {
+    for(const host of hostList) {
         if(await IsHostRegistered({host,appName})) {
             throw new Error(`the domain[${host}] has been registered`)
         }
     }
-    for(const host of appConfig.hostList) {
+    for(const host of hostList) {
         await etcd.put({key:getHostKeyByHost({host}),value:{appName}})
     }
-    await etcd.put({key:getAppConfigKeyByAppName({appName}),value:appConfig})
+    await etcd.put({key:getAppConfigKeyByAppName({appName}),value:{
+        appName,
+        description,
+        hostList,
+        appConfig
+    }})
     return true
 }
 
@@ -152,10 +163,10 @@ export async function getAppConfigByAppName(appName:string):Promise<VaasServerTy
             timeout: 30*1000
         }
     }
-    const appConfigList = await etcd.range({key:getAppConfigKeyByAppName({appName})})
-    if(!appConfigList.length) {
+    const appConfigData = await getAppConfigDataByName({appName})
+    if(!appConfigData) {
         throw new Error(`appName[${appName}] not be registered`)
     }
     await latestApp({appName})
-    return appConfigList[0]
+    return appConfigData.value
 }
