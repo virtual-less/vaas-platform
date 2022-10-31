@@ -4,7 +4,8 @@ import {
     s3, 
     getAllAppConfigList, isAppNameRegistered, setAppConfigByAppName, 
     getAppConfigDataByName,deleteAppConfigByAppName,
-    getAllHostConfigList, setHostConfig, deleteHostConfigByHost
+    getAllHostConfigList, setHostConfig, deleteHostConfigByHost,
+    IsHostRegistered
 } from './config/app'
 import {deploy} from './deploy/index'
 import * as moment from 'moment'
@@ -68,7 +69,23 @@ export default class Platform {
     }
     
     @Decorator.VassServer({type:'http',method:'post'})
-    async setHostConfig({req,res}:VaasServerType.HttpParams) {
+    async createHostConfig({req,res}:VaasServerType.HttpParams) {
+        const {
+            appName,
+            host
+        } = req.body
+        if(await IsHostRegistered({host, appName})) {
+            throw new Error(`host[${host}] is Registered!`)
+        }
+        const data = await setHostConfig({
+            appName,
+            host
+        })
+        return data;
+    }
+
+    @Decorator.VassServer({type:'http',method:'put'})
+    async updateHostConfig({req,res}:VaasServerType.HttpParams) {
         const {
             appName,
             host
@@ -80,7 +97,7 @@ export default class Platform {
         return data;
     }
 
-    @Decorator.VassServer({type:'http',method:'delete', routerName:"/deleteAppConfig/:appName"})
+    @Decorator.VassServer({type:'http',method:'delete', routerName:"/deleteHostConfig/:host"})
     async deleteHostConfig({req,res}:VaasServerType.HttpParams) {
         let {
             host
