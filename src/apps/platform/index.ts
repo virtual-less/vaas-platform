@@ -1,6 +1,6 @@
 import {VaasServerType, Decorator} from 'vaas-framework'
 import {v1 as uuidV1} from 'uuid'
-import {s3, getAllAppConfigList, isAppNameRegistered, setAppConfigByAppName} from './config/app'
+import {s3, getAllAppConfigList, isAppNameRegistered, setAppConfigByAppName, getAppConfigDataByName} from './config/app'
 import {deploy} from './deploy/index'
 import * as moment from 'moment'
 
@@ -43,8 +43,17 @@ export default class Platform {
 
     @Decorator.VassServer({type:'http',method:'get'})
     async getAllAppList({req,res}:VaasServerType.HttpParams) {
-        const data =  await getAllAppConfigList()
-        return {data}
+        const configData =  await getAllAppConfigList()
+        return {data:configData.map(e=>e.value)}
+    }
+
+    @Decorator.VassServer({type:'http',method:'get'})
+    async getAppByName({req,res}:VaasServerType.HttpParams) {
+        const {
+            appName,
+        } = req.query
+        const appConfigData =  await getAppConfigDataByName({appName})
+        return {data:appConfigData.value}
     }
         
 
@@ -64,10 +73,9 @@ export default class Platform {
         }
         const data = await setAppConfigByAppName({
             appName,
+            description,
+            hostList,
             appConfig:{
-                appName,
-                description,
-                hostList,
                 maxWorkerNum,
                 allowModuleSet,
                 timeout,
@@ -90,10 +98,9 @@ export default class Platform {
         } = req.body
         const data = await setAppConfigByAppName({
             appName,
+            description,
+            hostList,
             appConfig:{
-                appName,
-                description,
-                hostList,
                 maxWorkerNum,
                 allowModuleSet,
                 timeout,
