@@ -162,12 +162,24 @@ export async function deleteAppConfigByAppName({
 
 
 export async function getAppNameByRequest(request:VaasServerType.RequestConfig):Promise<string> {
+    // 配置优先
     const hostConfigList = await etcd.range({key:getHostKeyByHost({host:request.hostname})})
     if(hostConfigList) {
         for(const hostConfig of hostConfigList) {
             return hostConfig.value.appName
         }
     }
+    // 否
+    const publicPath = path.join(path.dirname(__dirname),'public',request.path)
+    let isExist = false
+    try {
+        await fsPromises.access(publicPath,fsConstants.F_OK)
+        isExist = true
+    } catch{}
+    if(isExist || request.path==='/') {
+        return 'platform'
+    }
+
     return ''
 }
 
