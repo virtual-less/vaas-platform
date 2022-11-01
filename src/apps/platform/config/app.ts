@@ -72,6 +72,9 @@ async function deployApp({appName, deployData}) {
 
 export async function latestApp({appName}) {
     const latestDeployData =  await getDeployDataByAppName({appName})
+    if(!(latestDeployData?.value?.appBuildTgzS3Key)) {
+        throw new Error(`appName[${appName}] not be deployed!please run [vaas deploy] in your vaas project!`)
+    }
     let isExist = true
     try {
         await fsPromises.access(getDeployMetaPath({appName}), fsConstants.F_OK)
