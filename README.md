@@ -49,7 +49,16 @@ Virtual as a Service Platform
     ```sh
     npm run start
     ```
-5. open platform ui（todo）
+5. open platform ui
     ```sh
-    open http://127.0.0.1:9080/platform/
+    open http://127.0.0.1:9080/
+    ```
+6. init your vaas project
+    ```sh
+    cd ..
+    npm init vaas
+    ```
+7. deploy in your vaas project
+    ```sh
+    npm run deploy
     ```
