@@ -9,8 +9,26 @@ import {
 } from './config/app'
 import {deploy} from './deploy/index'
 import * as moment from 'moment'
+import {promises as fsPromises} from 'fs'
+import * as path from 'path'
 
 export default class Platform {
+    @Decorator.VassServer({type:'http',method:'get','routerName':'/'})
+    async index({req,res}:VaasServerType.HttpParams) {
+        return (await fsPromises.readFile(path.join(__dirname,'public/index.html'))).toString()
+    }
+    @Decorator.VassServer({type:'http',method:'get','routerName':/\.\w+$/})
+    async public({req,res}:VaasServerType.HttpParams) {
+        const extname = path.extname(req.path)
+        if(['.json','.js','.css','.txt','.map'].includes(extname)) {
+            res.type = extname.replace(/^\./,'')
+            return (await fsPromises.readFile(path.join(__dirname,'public',req.path))).toString()
+        } else {
+            return await fsPromises.readFile(path.join(__dirname,'public',req.path))
+        }
+        
+    }
+
     @Decorator.VassServer({type:'http',method:'get'})
     async getUploadUrl({req,res}:VaasServerType.HttpParams) {
         const {
