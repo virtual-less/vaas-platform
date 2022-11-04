@@ -199,5 +199,5 @@ export async function getAppConfigByAppName(appName:string):Promise<VaasServerTy
         throw new Error(`appName[${appName}] not be registered`)
     }
     await latestApp({appName})
-    return appConfigData.value
+    return appConfigData.value.appConfig
 }
