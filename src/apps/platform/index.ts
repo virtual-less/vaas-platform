@@ -17,7 +17,7 @@ export default class Platform {
     async index({req,res}:VaasServerType.HttpParams) {
         return (await fsPromises.readFile(path.join(__dirname,'public/index.html'))).toString()
     }
-    @Decorator.VassServer({type:'http',method:'get','routerName':/\.\w+$/})
+    @Decorator.VassServer({type:'http',method:'get','routerName':'/:name*.:type'})
     async public({req,res}:VaasServerType.HttpParams) {
         const extname = path.extname(req.path)
         if(['.json','.js','.css','.txt','.map'].includes(extname)) {
