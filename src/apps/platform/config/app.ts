@@ -1,13 +1,17 @@
 import {VaasServerType} from 'vaas-framework'
 import * as compressing from 'compressing'
 import * as path from 'path'
-import {promises as fsPromises, constants as fsConstants} from 'fs'
+import {
+    promises as fsPromises, constants as fsConstants, 
+    readdirSync, statSync
+} from 'fs'
 import {v1 as uuidV1} from 'uuid'
 import {S3} from '../lib/s3'
 
 
 import config from './index'
 import {Etcd} from '../lib/etcd'
+
 
 export const etcd = new Etcd({...config.configServer.etcd})
 export const s3 = new S3({
@@ -106,8 +110,8 @@ export async function getAllHostConfigList() {
     })
 }
 
-export async function getAppConfigDataByName({appName}) {
-    const appConfigList = await etcd.range({key:getAppConfigKeyByAppName({appName})})
+export async function getAppConfigDataByName({appName,isCache=false}) {
+    const appConfigList = await etcd.range({key:getAppConfigKeyByAppName({appName}), isCache})
     return appConfigList[0]
 }
 
@@ -162,27 +166,39 @@ export async function deleteAppConfigByAppName({
     return await etcd.delete({key:getAppConfigKeyByAppName({appName})})
 }
 
+const PlatformPublicPath = path.join(path.dirname(__dirname),'public')
 
+function getDirFilePathList(filePathList:Array<string>, dirPath:string) {
+    const fileNameList = readdirSync(dirPath)
+    for(const fileName of fileNameList) {
+        if(fileName=='.' || fileName=='..'){continue}
+        const filePath = path.join(dirPath, fileName)
+        const stat = statSync(filePath)
+        if(stat.isDirectory()) {
+            getDirFilePathList(filePathList,filePath)
+        }
+        filePathList.push(filePath)
+    }
+    return filePathList;
+}
 
+const PlatformPublicFilePathList:Array<string> = getDirFilePathList([], PlatformPublicPath)
+const PlatformPublicFilePathSet = new Set<string>(PlatformPublicFilePathList)
 export async function getAppNameByRequest(request:VaasServerType.RequestConfig):Promise<string> {
+    const host = request.hostname
     // 配置优先
-    const hostConfigList = await etcd.range({key:getHostKeyByHost({host:request.hostname})})
+    const hostConfigList = await etcd.range({key:getHostKeyByHost({host}),isCache:true})
     if(hostConfigList) {
         for(const hostConfig of hostConfigList) {
             return hostConfig.value.appName
         }
     }
-    // 否
-    const publicPath = path.join(path.dirname(__dirname),'public',request.path)
-    let isExist = false
-    try {
-        await fsPromises.access(publicPath,fsConstants.F_OK)
-        isExist = true
-    } catch{}
+    // 否则默认渲染platform
+    const publicPath = path.join(PlatformPublicPath, request.path)
+    let isExist = PlatformPublicFilePathSet.has(publicPath)
     if(isExist || request.path==='/') {
         return 'platform'
     }
-
     return ''
 }
 
@@ -194,7 +210,7 @@ export async function getAppConfigByAppName(appName:string):Promise<VaasServerTy
             timeout: 30*1000
         }
     }
-    const appConfigData = await getAppConfigDataByName({appName})
+    const appConfigData = await getAppConfigDataByName({appName, isCache:true})
     if(!appConfigData) {
         throw new Error(`appName[${appName}] not be registered`)
     }
