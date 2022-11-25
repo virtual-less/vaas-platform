@@ -1,6 +1,9 @@
 import {Netcd, Metadata} from 'netcd'
+import {CacheServer} from './cache'
+import {createHash} from 'crypto'
 
-
+// 虽然是全局生成，但是会被不同线程引用初始化多次
+const cacheServer = new CacheServer()
 export class Etcd {
     netcd:Netcd;
     private username:string;
@@ -34,11 +37,23 @@ export class Etcd {
 
     async range({
         key,
-        rangeEnd
+        rangeEnd,
+        isCache
     }:{
         key:string,
         rangeEnd?:string,
+        isCache?:boolean
     }):Promise<Array<{key:string,value:any}>> {
+        let cacheKey
+        if(isCache) {
+            cacheKey = createHash('sha256').update(JSON.stringify({
+                key,
+                rangeEnd
+            })).digest('base64').toString()
+            if(cacheServer.hasCache(cacheKey)) {
+                return cacheServer.getCache(cacheKey)
+            }
+        }
         const client = this.netcd.getClient('KV')
         const meta = await this.getMeta()
         return await new Promise((reslove, reject)=>{
@@ -47,11 +62,15 @@ export class Etcd {
                 rangeEnd:rangeEnd?Buffer.from(rangeEnd).toString('base64'):undefined,
             },meta, (err,data)=>{
                 if(err)return reject(err)
-                return reslove((data.kvs || []).map(data=>{
+                const res = (data.kvs || []).map(data=>{
                     data.key = data.key.toString()
                     data.value = JSON.parse(data.value)
                     return data
-                }))
+                })
+                if(isCache) {
+                    cacheServer.setCache(cacheKey, res)
+                }
+                return reslove(res)
             })
         })
     }
