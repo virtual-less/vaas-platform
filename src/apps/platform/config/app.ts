@@ -182,8 +182,7 @@ function getDirFilePathList(filePathList:Array<string>, dirPath:string) {
     return filePathList;
 }
 
-const PlatformPublicFilePathList:Array<string> = getDirFilePathList([], PlatformPublicPath)
-const PlatformPublicFilePathSet = new Set<string>(PlatformPublicFilePathList)
+let PlatformPublicFilePathSet = null
 export async function getAppNameByRequest(request:VaasServerType.RequestConfig):Promise<string> {
     const host = request.hostname
     // 配置优先
@@ -195,6 +194,9 @@ export async function getAppNameByRequest(request:VaasServerType.RequestConfig):
     }
     // 否则默认渲染platform
     const publicPath = path.join(PlatformPublicPath, request.path)
+    if(!PlatformPublicFilePathSet) {
+        PlatformPublicFilePathSet = new Set<string>(getDirFilePathList([], PlatformPublicPath))
+    }
     let isExist = PlatformPublicFilePathSet.has(publicPath)
     if(isExist || request.path==='/') {
         return 'platform'
