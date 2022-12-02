@@ -13,11 +13,11 @@ import {promises as fsPromises} from 'fs'
 import * as path from 'path'
 
 export default class Platform {
-    @Decorator.VassServer({type:'http',method:'get','routerName':'/'})
+    @Decorator.VaasServer({type:'http',method:'get','routerName':'/'})
     async index({req,res}:VaasServerType.HttpParams) {
         return (await fsPromises.readFile(path.join(__dirname,'public/index.html'))).toString()
     }
-    @Decorator.VassServer({type:'http',method:'get','routerName':'/:name*.:type'})
+    @Decorator.VaasServer({type:'http',method:'get','routerName':'/:name*.:type'})
     async public({req,res}:VaasServerType.HttpParams) {
         const extname = path.extname(req.path)
         if(['.json','.js','.css','.txt','.map'].includes(extname)) {
@@ -29,7 +29,7 @@ export default class Platform {
         
     }
 
-    @Decorator.VassServer({type:'http',method:'get'})
+    @Decorator.VaasServer({type:'http',method:'get'})
     async getUploadUrl({req,res}:VaasServerType.HttpParams) {
         const {
             fileName,
@@ -55,7 +55,7 @@ export default class Platform {
         }
     }
 
-    @Decorator.VassServer({type:'http',method:'post'})
+    @Decorator.VaasServer({type:'http',method:'post'})
     async deploy({req,res}:VaasServerType.HttpParams) {
         const {
             appBuildTgzS3Key,
@@ -65,19 +65,19 @@ export default class Platform {
         return {data}
     }
 
-    @Decorator.VassServer({type:'http',method:'get'})
+    @Decorator.VaasServer({type:'http',method:'get'})
     async getAllAppList({req,res}:VaasServerType.HttpParams) {
         const configData =  await getAllAppConfigList()
         return {data:configData.map(e=>e.value)}
     }
 
-    @Decorator.VassServer({type:'http',method:'get'})
+    @Decorator.VaasServer({type:'http',method:'get'})
     async getAllHostList({req,res}:VaasServerType.HttpParams) {
         const configData =  await getAllHostConfigList()
         return {data:configData.map(e=>e.value)}
     }
 
-    @Decorator.VassServer({type:'http',method:'get'})
+    @Decorator.VaasServer({type:'http',method:'get'})
     async getAppByName({req,res}:VaasServerType.HttpParams) {
         const {
             appName,
@@ -86,7 +86,7 @@ export default class Platform {
         return {data:appConfigData.value}
     }
     
-    @Decorator.VassServer({type:'http',method:'post'})
+    @Decorator.VaasServer({type:'http',method:'post'})
     async createHostConfig({req,res}:VaasServerType.HttpParams) {
         const {
             appName,
@@ -102,7 +102,7 @@ export default class Platform {
         return data;
     }
 
-    @Decorator.VassServer({type:'http',method:'put'})
+    @Decorator.VaasServer({type:'http',method:'put'})
     async updateHostConfig({req,res}:VaasServerType.HttpParams) {
         const {
             appName,
@@ -115,7 +115,7 @@ export default class Platform {
         return data;
     }
 
-    @Decorator.VassServer({type:'http',method:'delete', routerName:"/deleteHostConfig/:host"})
+    @Decorator.VaasServer({type:'http',method:'delete', routerName:"/deleteHostConfig/:host"})
     async deleteHostConfig({req,res}:VaasServerType.HttpParams) {
         let {
             host
@@ -125,7 +125,7 @@ export default class Platform {
         return {data}
     }
 
-    @Decorator.VassServer({type:'http',method:'post'})
+    @Decorator.VaasServer({type:'http',method:'post'})
     async createAppConfig({req,res}:VaasServerType.HttpParams) {
         const {
             appName,
@@ -151,7 +151,7 @@ export default class Platform {
         return {data}
     }
 
-    @Decorator.VassServer({type:'http',method:'put'})
+    @Decorator.VaasServer({type:'http',method:'put'})
     async updateAppConfig({req,res}:VaasServerType.HttpParams) {
         const {
             appName,
@@ -174,7 +174,7 @@ export default class Platform {
         return {data}
     }
 
-    @Decorator.VassServer({type:'http',method:'delete', routerName:"/deleteAppConfig/:appName"})
+    @Decorator.VaasServer({type:'http',method:'delete', routerName:"/deleteAppConfig/:appName"})
     async deleteAppConfig({req,res}:VaasServerType.HttpParams) {
         let {
             appName
