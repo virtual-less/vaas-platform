@@ -213,9 +213,11 @@ export async function getAppConfigByAppName(appName:string):Promise<VaasServerTy
         }
     }
     const appConfigData = await getAppConfigDataByName({appName, isCache:true})
+    const appConfig = appConfigData.value.appConfig;
+    appConfig.allowModuleSet = new Set(appConfig.allowModuleSet);
     if(!appConfigData) {
         throw new Error(`appName[${appName}] not be registered`)
     }
     await latestApp({appName})
-    return appConfigData.value.appConfig
+    return appConfig
 }
