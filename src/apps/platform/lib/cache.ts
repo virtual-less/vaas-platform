@@ -12,7 +12,7 @@ export class CacheServer {
         const cache = this.cacheMap.get(key)
         return cache?.value
     }
-    setCache(key:string, value:any, expireMs:number=30000) {
+    setCache(key:string, value:any, expireMs:number=10000) {
         const cache = this.cacheMap.get(key)
         if(cache?.timerId){
             clearTimeout(cache.timerId)

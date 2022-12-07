@@ -52,6 +52,7 @@ export async function setDeployKeyByAppName({appName,appBuildTgzS3Key}) {
 export async function getDeployDataByAppName({appName}) {
     const deployData = (await etcd.range({
         key:getDeployKeyByAppName({appName}),
+        isCache:true
     }))[0]
     return deployData
 }
