@@ -1,5 +1,4 @@
 import {VaasServerType} from 'vaas-framework'
-import * as compressing from 'compressing'
 import * as path from 'path'
 import {
     promises as fsPromises, constants as fsConstants, 
@@ -8,7 +7,6 @@ import {
 import {
     Worker
 } from 'worker_threads';
-import {v1 as uuidV1} from 'uuid'
 import {S3} from '../lib/s3'
 
 
