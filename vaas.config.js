@@ -5,5 +5,6 @@ module.exports = {
     port:9080,
     showErrorStack:true,
     getAppNameByRequest: config.getAppNameByRequest,
-    getAppConfigByAppName:config.getAppConfigByAppName
+    getAppConfigByAppName:config.getAppConfigByAppName,
+    getByPassFlowVersion:config.getByPassFlowVersion
 }

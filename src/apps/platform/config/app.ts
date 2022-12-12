@@ -41,10 +41,10 @@ function getDeployKeyByAppName({appName=''}) {
     return `/vaas/config/deploy/${appName}`
 }
 
-export async function setDeployKeyByAppName({appName,appBuildTgzS3Key}) {
+export async function setDeployKeyByAppName({appName, version, appBuildS3Key}) {
     const res = await etcd.put({
         key:getDeployKeyByAppName({appName}),
-        value:{appBuildTgzS3Key, appName}
+        value:{appBuildS3Key, appName, version}
     })
     return res
 }
@@ -57,19 +57,43 @@ export async function getDeployDataByAppName({appName}) {
     return deployData
 }
 
-function getDeployMetaPath({appName}) {
-    return path.join(AppsDir,`${appName}.deploy`)
+function getDeployAppPath({appName, version}) {
+    return path.join(AppsDir, appName, version)
 }
 
-async function deployApp({appName, deployData}) {
+function getDeployMetaPath({appName}) {
+    return path.join(AppsDir, `${appName}.deploy.json`)
+}
+
+async function isExistDeployMeta({deployMetaPath}) {
+    let isExist = true
+    try {
+        await fsPromises.access(deployMetaPath, fsConstants.F_OK)
+    } catch(error) {
+        isExist = false
+    }
+    return isExist
+}
+
+async function getDeployMetaJson({deployMetaPath}):Promise<{
+    key:string,
+    value:{
+        appBuildS3Key:string, appName:string, version:string
+    }
+}> {
+    return JSON.parse(await (await fsPromises.readFile(deployMetaPath)).toString())
+}
+
+async function deployApp({appName, version, appBuildS3Key, deployData}) {
     const filePath = path.join(
         __dirname, uuidV1()
     )
     await s3.fGetObject({
-        key:deployData.value.appBuildTgzS3Key,
+        key:appBuildS3Key,
         filePath
     })
-    await compressing.tgz.uncompress(filePath, AppsDir)
+    const appDirPath = getDeployAppPath({appName, version})
+    await compressing.zip.uncompress(filePath, appDirPath)
     await fsPromises.unlink(filePath)
     return await fsPromises.writeFile(getDeployMetaPath({appName}),JSON.stringify(deployData))
 }
@@ -77,21 +101,19 @@ async function deployApp({appName, deployData}) {
 
 export async function latestApp({appName}) {
     const latestDeployData =  await getDeployDataByAppName({appName})
-    if(!(latestDeployData?.value?.appBuildTgzS3Key)) {
+    const appBuildS3Key = latestDeployData?.value?.appBuildS3Key || ''
+    if(!appBuildS3Key) {
         throw new Error(`appName[${appName}] not be deployed!please run [vaas deploy] in your vaas project!`)
     }
-    let isExist = true
-    try {
-        await fsPromises.access(getDeployMetaPath({appName}), fsConstants.F_OK)
-    } catch(error) {
-        isExist = false
-    }
+    const version = latestDeployData?.value?.version || ''
+    const deployMetaPath = getDeployMetaPath({appName})
+    const isExist = await isExistDeployMeta({deployMetaPath})
     if(!isExist) {
-        return await deployApp({appName,deployData:latestDeployData})
+        return await deployApp({appName, version, appBuildS3Key, deployData: latestDeployData})
     }
-    const nowDeployData = JSON.parse(await (await fsPromises.readFile(getDeployMetaPath({appName}))).toString())
-    if(nowDeployData.value.appBuildTgzS3Key!=latestDeployData.value.appBuildTgzS3Key){
-        return await deployApp({appName,deployData:latestDeployData})
+    const nowDeployData = await getDeployMetaJson({deployMetaPath})
+    if(nowDeployData.value.appBuildS3Key!=latestDeployData.value.appBuildS3Key){
+        return await deployApp({appName, version, appBuildS3Key, deployData: latestDeployData})
     }
     return true
 }
@@ -221,4 +243,14 @@ export async function getAppConfigByAppName(appName:string):Promise<VaasServerTy
     }
     await latestApp({appName})
     return appConfig
+}
+
+export async function getByPassFlowVersion(appName:string):Promise<string> {
+    const deployMetaPath = getDeployMetaPath({appName})
+    const isExist = await isExistDeployMeta({deployMetaPath})
+    if(!isExist) {
+        return ''
+    }
+    const nowDeployData = await getDeployMetaJson({deployMetaPath})
+    return nowDeployData?.value?.version || ''
 }

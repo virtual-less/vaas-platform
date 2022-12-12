@@ -58,10 +58,11 @@ export default class Platform {
     @Decorator.VaasServer({type:'http',method:'post'})
     async deploy({req,res}:VaasServerType.HttpParams) {
         const {
-            appBuildTgzS3Key,
-            appName
+            appBuildS3Key,
+            appName,
+            version
         } = req.body
-        const data = await deploy({appName, appBuildTgzS3Key})
+        const data = await deploy({appName, version, appBuildS3Key})
         return {data}
     }
 
