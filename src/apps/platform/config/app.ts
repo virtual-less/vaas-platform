@@ -38,21 +38,21 @@ function getHostKeyByHost({host=''}) {
     return `/vaas/config/host/${host}`
 }
 
-function getDeployKeyByAppName({appName=''}) {
-    return `/vaas/config/deploy/${appName}`
+function getDeployKeyByAppName({appName='', version}) {
+    return `/vaas/config/deploy/${appName}/${version}`
 }
 
 export async function setDeployKeyByAppName({appName, version, appBuildS3Key}) {
     const res = await etcd.put({
-        key:getDeployKeyByAppName({appName}),
+        key:getDeployKeyByAppName({appName, version}),
         value:{appBuildS3Key, appName, version}
     })
     return res
 }
 
-export async function getDeployDataByAppName({appName}) {
+export async function getDeployDataByAppName({appName, version}) {
     const deployData = (await etcd.range({
-        key:getDeployKeyByAppName({appName}),
+        key:getDeployKeyByAppName({appName, version}),
         isCache:true
     }))[0]
     return deployData
@@ -108,7 +108,7 @@ function deployApp({appName, version, appBuildS3Key, deployData}) {
 
 
 export async function latestApp({appName}) {
-    const latestDeployData =  await getDeployDataByAppName({appName})
+    const latestDeployData =  await getDeployDataByAppName({appName, version:'latest'})
     const appBuildS3Key = latestDeployData?.value?.appBuildS3Key || ''
     if(!appBuildS3Key) {
         throw new Error(`appName[${appName}] not be deployed!please run [vaas deploy] in your vaas project!`)
