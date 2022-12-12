@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/virtual-less/vaas-template#readme",
   "dependencies": {
-    "vaas-framework": "^1.1.2"
+    "vaas-framework": "^1.2.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.20",
