@@ -5,6 +5,9 @@ import {
     promises as fsPromises, constants as fsConstants, 
     readdirSync, statSync
 } from 'fs'
+import {
+    Worker
+} from 'worker_threads';
 import {v1 as uuidV1} from 'uuid'
 import {S3} from '../lib/s3'
 
@@ -57,11 +60,11 @@ export async function getDeployDataByAppName({appName}) {
     return deployData
 }
 
-function getDeployAppPath({appName, version}) {
+export function getDeployAppPath({appName, version}) {
     return path.join(AppsDir, appName, version)
 }
 
-function getDeployMetaPath({appName}) {
+export function getDeployMetaPath({appName}) {
     return path.join(AppsDir, `${appName}.deploy.json`)
 }
 
@@ -84,18 +87,25 @@ async function getDeployMetaJson({deployMetaPath}):Promise<{
     return JSON.parse(await (await fsPromises.readFile(deployMetaPath)).toString())
 }
 
-async function deployApp({appName, version, appBuildS3Key, deployData}) {
-    const filePath = path.join(
-        __dirname, uuidV1()
-    )
-    await s3.fGetObject({
-        key:appBuildS3Key,
-        filePath
+function deployApp({appName, version, appBuildS3Key, deployData}) {
+    return new Promise((resolve, reject)=>{
+        const deployAppWorkerPath = path.join(
+            path.dirname(__dirname),
+            '/deploy/deployAppWorker.js'
+        )
+        const worker = new Worker(deployAppWorkerPath,{
+            workerData:{appName, version, appBuildS3Key, deployData}
+        });
+        worker.once("error",(error)=>{
+            worker.removeAllListeners()
+            return reject(error)
+        })
+        worker.once("exit",(exitCode)=>{
+            worker.removeAllListeners()
+            return resolve(exitCode)
+        })
     })
-    const appDirPath = getDeployAppPath({appName, version})
-    await compressing.zip.uncompress(filePath, appDirPath)
-    await fsPromises.unlink(filePath)
-    return await fsPromises.writeFile(getDeployMetaPath({appName}),JSON.stringify(deployData))
+    
 }
 
 
