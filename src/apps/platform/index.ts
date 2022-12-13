@@ -1,12 +1,16 @@
 import {VaasServerType, Decorator} from 'vaas-framework'
 import {v1 as uuidV1} from 'uuid'
 import {
-    s3, 
     getAllAppConfigList, isAppNameRegistered, setAppConfigByAppName, 
     getAppConfigDataByName,deleteAppConfigByAppName,
     getAllHostConfigList, setHostConfig, deleteHostConfigByHost,
     IsHostRegistered
+} from './config/dynamicConfig'
+
+import {
+    s3
 } from './config/app'
+
 import {deploy} from './deploy/index'
 import * as moment from 'moment'
 import {promises as fsPromises} from 'fs'

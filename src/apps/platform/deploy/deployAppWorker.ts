@@ -1,6 +1,7 @@
 import * as path from 'path'
 import {v1 as uuidV1} from 'uuid'
-import { s3, getDeployAppPath, getDeployMetaPath } from '../config/app'
+import { s3 } from '../config/app'
+import { getDeployAppPath, getDeployMetaPath } from '../config/deploy'
 import * as compressing from 'compressing'
 import {
     promises as fsPromises
@@ -20,6 +21,6 @@ async function deployApp({appName, version, appBuildS3Key, deployData}) {
     const appDirPath = getDeployAppPath({appName, version})
     await compressing.zip.uncompress(filePath, appDirPath)
     await fsPromises.unlink(filePath)
-    return await fsPromises.writeFile(getDeployMetaPath({appName}),JSON.stringify(deployData))
+    return await fsPromises.writeFile(getDeployMetaPath({appName, version}),JSON.stringify(deployData))
 }
 deployApp(workerData)
