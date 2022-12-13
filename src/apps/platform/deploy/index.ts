@@ -11,14 +11,13 @@ export async function deploy({appName, version, appBuildS3Key}) {
     const deployVersionRes =  await setDeployKeyByAppName({appName, version, appBuildS3Key})
     const byPassData  = await getByPassDataByAppName({appName})
     let byPassDataEffectRes;
-    if(!byPassData) {
+    if(!byPassData || byPassData.value.type==='latest') {
         byPassDataEffectRes = await setByPassByAppName({
             appName, 
             strategy:{
-                type:'only',
-                only:{
-                    version
-                }
+                type:'latest',
+                latest:{version}
+                
             }
         })
     }

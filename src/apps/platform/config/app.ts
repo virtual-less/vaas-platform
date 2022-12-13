@@ -20,9 +20,23 @@ export const s3 = new S3({
 })
 
 function getVersionByByPassData(byPassDataValue) {
+    // lock 为锁定版本, weight 为版本权重，latest为使用最新发布【默认选项】
     switch(byPassDataValue.type) {
-        case 'only':
-            return byPassDataValue.only.version;
+        case 'lock':
+            return byPassDataValue.lock.version;
+        case 'weight':
+            const weightList = Object.entries<number>(byPassDataValue.weight);
+            const total = weightList.reduce((total,now)=>total+now[1],0)
+            const random = Math.ceil(Math.random()*total)
+            let weightTotal = 0
+            for (const weight of weightList) {
+                if(weightTotal<=random && random<= weightTotal+weight[1]) {
+                    return weight[0]
+                }
+                weightTotal+=weight[1]
+            }
+        case 'latest':
+            return byPassDataValue.latest.version;
         default:
             throw new Error(`strategy type [${byPassDataValue.type}] not exist!`)
     }
