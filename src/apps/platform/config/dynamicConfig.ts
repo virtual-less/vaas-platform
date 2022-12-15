@@ -17,7 +17,7 @@ function getHostKeyByHost({host=''}) {
     return `/vaas/config/host/${host}`
 }
 
-function getDeployKeyByAppName({appName='', version}) {
+function getDeployKeyByAppName({appName, version=''}) {
     return `/vaas/config/deploy/${appName}/${version}`
 }
 
@@ -69,6 +69,13 @@ export async function getAllHostConfigList() {
     return await etcd.range({
         key:getHostKeyByHost({}),
         rangeEnd:upgradeConfigKey({key:getHostKeyByHost({})})
+    })
+}
+export async function getAllVsersionByAppName({appName, limit}) {
+    return await etcd.range({
+        key:getDeployKeyByAppName({appName}),
+        rangeEnd:upgradeConfigKey({key:getDeployKeyByAppName({appName})}),
+        limit
     })
 }
 

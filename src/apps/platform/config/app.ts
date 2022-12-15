@@ -25,15 +25,15 @@ function getVersionByByPassData(byPassDataValue) {
         case 'lock':
             return byPassDataValue.lock.version;
         case 'weight':
-            const weightList = Object.entries<number>(byPassDataValue.weight);
-            const total = weightList.reduce((total,now)=>total+now[1],0)
+            const weightList:Array<{version:string,weight:number}> = byPassDataValue.weight
+            const total = weightList.reduce((total,now)=>total+now.weight,0)
             const random = Math.ceil(Math.random()*total)
             let weightTotal = 0
-            for (const weight of weightList) {
-                if(weightTotal<=random && random<= weightTotal+weight[1]) {
-                    return weight[0]
+            for (const item of weightList) {
+                if(weightTotal<=random && random<= weightTotal+item.weight) {
+                    return item.version
                 }
-                weightTotal+=weight[1]
+                weightTotal+=item.weight
             }
         case 'latest':
             return byPassDataValue.latest.version;

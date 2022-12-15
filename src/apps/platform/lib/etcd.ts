@@ -38,10 +38,16 @@ export class Etcd {
     async range({
         key,
         rangeEnd,
-        isCache
+        limit=0,
+        sortOrder=2,
+        sortTarget=2,
+        isCache=false
     }:{
         key:string,
         rangeEnd?:string,
+        limit?:number,
+        sortOrder?:number,
+        sortTarget?:number,
         isCache?:boolean
     }):Promise<Array<{key:string,value:any}>> {
         let cacheKey
@@ -60,6 +66,9 @@ export class Etcd {
             client.Range({
                 key:Buffer.from(key).toString('base64'),
                 rangeEnd:rangeEnd?Buffer.from(rangeEnd).toString('base64'):undefined,
+                limit,
+                sortOrder,
+                sortTarget
             },meta, (err,data)=>{
                 if(err)return reject(err)
                 const res = (data.kvs || []).map(data=>{
