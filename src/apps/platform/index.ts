@@ -4,6 +4,7 @@ import {
     getAllAppConfigList, isAppNameRegistered, setAppConfigByAppName, 
     getAppConfigDataByName,deleteAppConfigByAppName,
     getAllHostConfigList, setHostConfig, deleteHostConfigByHost,
+    getByPassDataByAppName, setByPassByAppName, getAllVsersionByAppName,
     IsHostRegistered
 } from './config/dynamicConfig'
 
@@ -187,6 +188,40 @@ export default class Platform {
         if(appName instanceof Array) {appName = appName[0]}
         const data =  await deleteAppConfigByAppName({appName})
         return {data}
+    }
+
+    @Decorator.VaasServer({type:'http',method:'get'})
+    async getByPassDataByAppName({req,res}:VaasServerType.HttpParams) {
+        const {
+            appName,
+        } = req.query
+        const byPassData =  await getByPassDataByAppName({appName})
+        return {data:byPassData?.value}
+    }
+
+    @Decorator.VaasServer({type:'http',method:'put'})
+    async updateByPassConfig({req,res}:VaasServerType.HttpParams) {
+        const {
+            appName,
+            strategy,
+        } = req.body
+        const data = await setByPassByAppName({
+            appName,
+            strategy
+        })
+        return {data}
+    }
+
+    @Decorator.VaasServer({type:'http',method:'get'})
+    async getAllVsersionByAppName({req,res}:VaasServerType.HttpParams) {
+        const {
+            appName,
+            limit=50
+        } = req.query
+        const versionList = (await getAllVsersionByAppName({appName, limit})).map((e)=>e.value.version)
+        return {
+            data:versionList
+        }
     }
 
 }
