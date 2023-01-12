@@ -13,12 +13,10 @@ git submodule foreach git checkout main
 ```
 
 # Quick Start
-1. install app dependencies & main dependencies
+1. install main dependencies && app dependencies
     ```sh
-    cd src/apps/platform
-    npm install
-    cd ../../..
-    npm install
+    npm install # install main dependencies
+    git submodule foreach npm install # install app dependencies
     ```
 
 2. launch your etcd & s3/minio
