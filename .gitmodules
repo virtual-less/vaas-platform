@@ -1,0 +1,3 @@
+[submodule "src/apps/platform"]
+	path = src/apps/platform
+	url = git@github.com:virtual-less/vaas-platform-app.git

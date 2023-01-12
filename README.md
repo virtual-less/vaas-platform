@@ -5,6 +5,13 @@ Virtual as a Service Platform
 ![Structure](https://raw.githubusercontent.com/virtual-less/assets/main/vaas-platform.png)
 
 
+# Get Code
+```sh
+git clone --recursive git@github.com:virtual-less/vaas-platform.git
+git submodule update --remote
+git submodule foreach git checkout main
+```
+
 # Quick Start
 1. install app dependencies & main dependencies
     ```sh
