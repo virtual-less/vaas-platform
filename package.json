@@ -4,12 +4,13 @@
   "description": "vaas server template",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run build && mocha \"./build/test/**/*.js\"",
     "copy": "cp -rf ./src/ ./build/",
     "build": "tsc",
     "launch": "npm run build && vaas",
     "start": "npm run copy && npm run launch",
-    "dev": "npm run copy && nodemon -e js,mjs,json,ts  --exec 'npm run launch' --watch ./src ./vaas.config.js"
+    "dev": "npm run copy && nodemon -e js,mjs,json,ts  --exec 'npm run launch' --watch ./src ./vaas.config.js",
+    "postinstall": "sh ./install.sh"
   },
   "repository": {
     "type": "git",

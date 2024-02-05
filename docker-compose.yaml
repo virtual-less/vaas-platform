@@ -1,0 +1,50 @@
+version: '3.6'
+services:
+
+  etcd:
+    image: bitnami/etcd:latest
+    container_name: vaas-platform-etcd
+    environment:
+      ALLOW_NONE_AUTHENTICATION: "yes"
+      ETCD_ADVERTISE_CLIENT_URLS: "http://etcd:2379"
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    networks:
+      - vaas-platform-network
+  minio:
+    image: 'bitnami/minio:latest'
+    container_name: vaas-platform-minio
+    environment:
+      - MINIO_ROOT_USER=minio-root-user
+      - MINIO_ROOT_PASSWORD=minio-root-password
+      - MINIO_DISTRIBUTED_MODE_ENABLED=yes
+    volumes:
+      - vaas-platform-minio-volume:/bitnami/minio/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - vaas-platform-network
+  vaas-platform:
+    image: vaas-platform-image
+    container_name: vaas-platform-server
+    restart: always
+    ports:
+      - "9080:9080" # API端口
+    links:
+      - etcd:etcd
+      - minio:minio
+    depends_on:
+      - etcd
+      - minio
+    networks:
+      - vaas-platform-network
+
+volumes:
+  vaas-platform-minio-volume:
+
+networks:
+  vaas-platform-network:
+    name:  vaas-platform-network
+    driver: bridge
