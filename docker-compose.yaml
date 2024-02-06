@@ -1,9 +1,11 @@
 version: '3.6'
+
 services:
 
   etcd:
     image: bitnami/etcd:latest
     container_name: vaas-platform-etcd
+    restart: always
     environment:
       ALLOW_NONE_AUTHENTICATION: "yes"
       ETCD_ADVERTISE_CLIENT_URLS: "http://etcd:2379"
@@ -12,13 +14,14 @@ services:
       - "2380:2380"
     networks:
       - vaas-platform-network
+
   minio:
     image: 'bitnami/minio:latest'
     container_name: vaas-platform-minio
+    restart: always
     environment:
-      - MINIO_ROOT_USER=minio-root-user
-      - MINIO_ROOT_PASSWORD=minio-root-password
-      - MINIO_DISTRIBUTED_MODE_ENABLED=yes
+      MINIO_ROOT_USER: "minio-root-user"
+      MINIO_ROOT_PASSWORD: "minio-root-password"
     volumes:
       - vaas-platform-minio-volume:/bitnami/minio/data
     ports:
@@ -26,15 +29,25 @@ services:
       - "9001:9001"
     networks:
       - vaas-platform-network
+
   vaas-platform:
     image: vaas-platform-image
     container_name: vaas-platform-server
     restart: always
+    environment:
+      VAAS_PLATFORM_ETCD_ENDPOINT: "etcd:2379"
+      VAAS_PLATFORM_ETCD_USERNAME: ""
+      VAAS_PLATFORM_ETCD_PASSWORD: ""
+      VAAS_PLATFORM_MINIO_HOST: "minio"
+      VAAS_PLATFORM_MINIO_PORT: "9000"
+      VAAS_PLATFORM_MINIO_ACCESSKEY: "minio-root-user"
+      VAAS_PLATFORM_MINIO_SECRETKEY: "minio-root-password"
+      VAAS_PLATFORM_MINIO_BUCKET: "vaas-bucket"
     ports:
       - "9080:9080" # API端口
     links:
-      - etcd:etcd
-      - minio:minio
+      - etcd
+      - minio
     depends_on:
       - etcd
       - minio
