@@ -1,5 +1,5 @@
 # 如果是intel则直接使用ubuntu，如果为mac M系列芯片则使用amd64/ubuntu
-FROM amd64/ubuntu:latest
+FROM ubuntu:latest
 
 # 安装依赖
 RUN apt-get -y update
