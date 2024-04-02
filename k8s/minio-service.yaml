@@ -1,11 +1,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f docker-compose.yaml
-    kompose.version: 1.32.0 (HEAD)
   labels:
-    io.kompose.service: minio
+    io.vaas.service: minio
   name: minio
 spec:
   ports:
@@ -16,4 +13,4 @@ spec:
       port: 9001
       targetPort: 9001
   selector:
-    io.kompose.service: minio
+    io.vaas.service: minio

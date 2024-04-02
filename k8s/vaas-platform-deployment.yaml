@@ -1,25 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f docker-compose.yaml
-    kompose.version: 1.32.0 (HEAD)
   labels:
-    io.kompose.service: vaas-platform
+    io.vaas.service: vaas-platform
   name: vaas-platform
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: vaas-platform
+      io.vaas.service: vaas-platform
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -f docker-compose.yaml
-        kompose.version: 1.32.0 (HEAD)
       labels:
-        io.kompose.network/vaas-platform-network: "true"
-        io.kompose.service: vaas-platform
+        io.vaas.network/vaas-platform-network: "true"
+        io.vaas.service: vaas-platform
     spec:
       containers:
         - env:
