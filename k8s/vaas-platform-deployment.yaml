@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yaml
+    kompose.version: 1.32.0 (HEAD)
+  labels:
+    io.kompose.service: vaas-platform
+  name: vaas-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: vaas-platform
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yaml
+        kompose.version: 1.32.0 (HEAD)
+      labels:
+        io.kompose.network/vaas-platform-network: "true"
+        io.kompose.service: vaas-platform
+    spec:
+      containers:
+        - env:
+            - name: VAAS_PLATFORM_ETCD_ENDPOINT
+              value: etcd:2379
+            - name: VAAS_PLATFORM_ETCD_PASSWORD
+            - name: VAAS_PLATFORM_ETCD_USERNAME
+            - name: VAAS_PLATFORM_MINIO_ACCESSKEY
+              value: minio-root-user
+            - name: VAAS_PLATFORM_MINIO_BUCKET
+              value: vaas-bucket
+            - name: VAAS_PLATFORM_MINIO_HOST
+              value: minio
+            - name: VAAS_PLATFORM_MINIO_PORT
+              value: "9000"
+            - name: VAAS_PLATFORM_MINIO_SECRETKEY
+              value: minio-root-password
+          image: vaas-platform-image
+          name: vaas-platform-server
+          ports:
+            - containerPort: 9080
+              hostPort: 9080
+              protocol: TCP
+      restartPolicy: Always
