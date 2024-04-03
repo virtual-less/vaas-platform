@@ -31,10 +31,14 @@ spec:
               value: "9000"
             - name: VAAS_PLATFORM_MINIO_SECRETKEY
               value: minio-root-password
-          image: vaas-platform-image
+          image: vaas-platform-image:latest
           name: vaas-platform-server
           ports:
             - containerPort: 9080
               hostPort: 9080
               protocol: TCP
+          resources:
+            limits:
+              cpu: 800m
+              memory: 2048Mi
       restartPolicy: Always
